@@ -21,19 +21,19 @@ public class ControlListener implements KeyListener {
     public void keyPressed(KeyEvent e) {
         switch(e.getKeyCode()) {
             case 37:
-                spaceship.moveLeft();
+                //spaceship.moveLeft();
                 //frame.repaint();
                 break;
             case 38:
-                spaceship.moveUp();
+                //spaceship.moveUp();
                 //frame.repaint();
                 break;
             case 39:
-                spaceship.moveRight();
+                //spaceship.moveRight();
                 //frame.repaint();
                 break;
             case 40:
-                spaceship.moveDown();
+                //spaceship.moveDown();
                 //frame.repaint();
         }
         System.out.println("b:" + e.getKeyCode());

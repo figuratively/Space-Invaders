@@ -4,20 +4,20 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-public class Asteroid extends DynamicObject implements RigidBody<Bullet> {
+public class Asteroid extends DynamicObject {
     BufferedImage bufferedImage;
 
     Asteroid(int x, int y, int size) {
         super(x, y, size);
         try {
-            bufferedImage = ImageIO.read(new File("meteor.png"));
+            bufferedImage = ImageIO.read(new File("meteor2.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     @Override
-    public void move() throws OutOfScreenException {
+    public void move(Integer... coordinates) throws OutOfScreenException {
         y++;
         if(y >= WindowSize.HEIGHT.getSize()) throw new OutOfScreenException();
     }
@@ -29,11 +29,11 @@ public class Asteroid extends DynamicObject implements RigidBody<Bullet> {
         g.drawImage(bufferedImage, x, y, size, size * 2, null);
     }
 
-    @Override
-    public boolean overlaps(Bullet bullet) {
-        boolean isLeftOverlapping = bullet.x >= x && bullet.x <= x + size;
-        boolean isTopOverlapping = bullet.y >= y && bullet.y + bullet.size <= y + size;
-        boolean isRightOverlapping = bullet.x + bullet.size >= x && bullet.x + bullet.size <= x + size;
-        return (isLeftOverlapping || isRightOverlapping) && isTopOverlapping;
-    }
+//    @Override
+//    public boolean overlaps(Bullet bullet) {
+//        boolean isLeftOverlapping = bullet.x >= x && bullet.x <= x + size;
+//        boolean isTopOverlapping = bullet.y >= y && bullet.y + bullet.size <= y + size;
+//        boolean isRightOverlapping = bullet.x + bullet.size >= x && bullet.x + bullet.size <= x + size;
+//        return (isLeftOverlapping || isRightOverlapping) && isTopOverlapping;
+//    }
 }

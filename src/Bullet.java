@@ -2,18 +2,18 @@ import java.awt.*;
 
 public class Bullet extends DynamicObject {
     Bullet(int x, int y, int size) {
-        super(x, y, size);
+        super(x, y - 30, size);
     }
 
     @Override
-    public void move() throws OutOfScreenException {
+    public void move(Integer... coordinates) throws OutOfScreenException {
         y--;
         if(y <= 0) throw new OutOfScreenException();
     }
 
     @Override
     public void paint(Graphics g) {
-        g.setColor(new Color(240, 60, 0));
-        g.fillOval(x, y, 10, 10);
+        g.setColor(new Color(36, 240, 0, 166));
+        g.fillRect(x, y + 30, size, size * 3);
     }
 }

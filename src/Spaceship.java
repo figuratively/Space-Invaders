@@ -4,21 +4,13 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-public class Spaceship {
+public class Spaceship extends DynamicObject {
     private BufferedImage bufferedImage;
-    private Polygon polygon;
-    private Polygon lastRenderedPolygon;
-    private Color color;
-    private int scale;
-    private int xMovement = 0;
-    private int yMovement = 0;
-    private int velocity = 1;
     private float deltaTime;
+    private boolean isDestroyed = false;
 
-    Spaceship() {
-        this.scale = 1;
-        initPolygon(scale);
-        color = Color.BLACK;
+    Spaceship(int size) {
+        super(512, 600, size);
         try {
             bufferedImage = ImageIO.read(new File("rocket.png"));
         } catch (IOException e) {
@@ -26,95 +18,46 @@ public class Spaceship {
         }
     }
 
-    Spaceship(int scale, Color color) {
-        initPolygon(scale);
-        this.scale = scale;
-        this.color = color;
-    }
-
+    @Override
     public void paint(Graphics g) {
-        g.setColor(color);
-        g.fillPolygon(polygon);
-        lastRenderedPolygon = polygon;
-
-        int x = lastRenderedPolygon.xpoints[1];
-        int y = lastRenderedPolygon.ypoints[1];
-        g.drawImage(bufferedImage, x - (int) (80 * 0.9), y, (int) (80 * 0.9), 80, null);
+        g.drawImage(bufferedImage, x, y, size, size, null);
     }
 
-    public Bullet getNewBullet() {
-        int x = lastRenderedPolygon.xpoints[1];
-        int y = lastRenderedPolygon.ypoints[1];
-        return new Bullet(x, y, 10);
-    }
+    @Override
+    public void move(Integer... coordinates) throws OutOfScreenException {
+        int x = coordinates[0];
+        boolean isXOnTheScreen = x >= 0 && x + size <= WindowSize.WIDTH.getSize();
 
-    public void move(SpaceshipMove move) throws OutOfScreenException {
-        int xMove = 0;
-        int yMove = 0;
-        switch (move) {
-            case LEFT:
-                xMove = -10;
-                break;
-            case UP:
-                yMove = -10;
-                break;
-            case RIGHT:
-                xMove = 10;
-                break;
-            case DOWN:
-                yMove = 10;
-                break;
-        }
-
-        Polygon wannaBePolygon = generatePolygon(scale, xMove, yMove);
-
-        int leftSide = wannaBePolygon.xpoints[0];
-        int rightSide = wannaBePolygon.xpoints[2];
-        int topSide = wannaBePolygon.ypoints[1];
-        int downSide = wannaBePolygon.ypoints[0];
-        boolean isXOnTheScreen = leftSide >= 0 && rightSide <= WindowSize.WIDTH.getSize();
-        boolean isYOnTheScreen = topSide >= 0 && downSide <= WindowSize.HEIGHT.getSize();
-
-        if (isXOnTheScreen && isYOnTheScreen) {
-            polygon = wannaBePolygon;
+        if (isXOnTheScreen) {
+            this.x = x;
         } else {
             throw new OutOfScreenException();
         }
     }
 
-    public void moveLeft() {
-        polygon = generatePolygon(scale, -10, 0);
+    public void destroy() {
+        isDestroyed = true;
+        try {
+            bufferedImage = ImageIO.read(new File("rocket_destroyed.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void moveRight() {
-        polygon = generatePolygon(scale, 10, 0);
+    public boolean getIsDestroyed() {
+        return isDestroyed;
     }
 
-    public void moveUp() {
-        polygon = generatePolygon(scale, 0, -10);
-    }
+//    public boolean overlaps(Asteroid asteroid) {
+//        boolean left = asteroid.x >= x && asteroid.x <= x + size;
+//        boolean right = asteroid.x + asteroid.size >= x && asteroid.x + asteroid.size <= x + size;
+//        boolean top = asteroid.y >= y && asteroid.y <= y + size;
+//        boolean down = asteroid.y + asteroid.size >= y && asteroid.y + asteroid.size <= y + size;
+//
+//        return (top && (right || left)) || (down && (left || right));
+//    }
 
-    public void moveDown() {
-        polygon = generatePolygon(scale, 0, 10);
-    }
-
-    public void move(int x, int y) {
-        polygon = generatePolygon(scale, x, 600);
-    }
-
-    private void initPolygon(int scale) {
-        polygon = new Polygon(
-                new int[]{482, 482 + 30 * scale, 482 + 60 * scale},
-                new int[]{622 + 60 * scale, 622, 622 + 60 * scale},
-                3
-        );
-    }
-
-    private Polygon generatePolygon(int scale, int x, int y) {
-        return new Polygon(
-                new int[]{x, x + 30 * scale, x + 60 * scale},
-                new int[]{y + 60 * scale,y, y + 60 * scale},
-                3
-        );
+    public Bullet getNewBullet() {
+        return new Bullet(x + size / 2, y, 10);
     }
 }
