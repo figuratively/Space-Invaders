@@ -1,3 +1,5 @@
+package game;
+
 public enum WindowSize {
     WIDTH(1024),
     HEIGHT(768);

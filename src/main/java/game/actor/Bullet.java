@@ -1,7 +1,9 @@
+package game.actor;
+
 import java.awt.*;
 
 public class Bullet extends DynamicObject {
-    Bullet(int x, int y, int size) {
+    public Bullet(int x, int y, int size) {
         super(x, y - 30, size);
     }
 

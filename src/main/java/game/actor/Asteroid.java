@@ -1,8 +1,13 @@
+package game.actor;
+
+import game.WindowSize;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class Asteroid extends DynamicObject {
     BufferedImage bufferedImage;
@@ -10,12 +15,19 @@ public class Asteroid extends DynamicObject {
     boolean isDestroyed = false;
     private final int DESTRUCTION_DELAY = 200;
 
-    Asteroid(int x, int y, int size) {
+    public Asteroid(int x, int y, int size) {
         super(x, y, size);
         try {
-            bufferedImage = ImageIO.read(new File("meteor2.png"));
+            InputStream stream = ClassLoader
+                    .getSystemClassLoader()
+                    .getResourceAsStream("pictures/meteor2.png");
+            if(stream != null)
+                bufferedImage = ImageIO.read(new BufferedInputStream(stream));
+            else
+                throw new IOException();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Couldn't load picture.1");
+            System.exit(1);
         }
     }
 
@@ -34,9 +46,16 @@ public class Asteroid extends DynamicObject {
         timeAfterDestruction = System.currentTimeMillis();
         isDestroyed = true;
         try {
-            bufferedImage = ImageIO.read(new File("meteor_destroyed.png"));
+            InputStream stream = ClassLoader
+                    .getSystemClassLoader()
+                    .getResourceAsStream("pictures/meteor_destroyed.png");
+            if(stream != null)
+                bufferedImage = ImageIO.read(new BufferedInputStream(stream));
+            else
+                throw new IOException();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Couldn't load picture.");
+            System.exit(1);
         }
     }
 

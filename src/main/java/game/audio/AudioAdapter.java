@@ -1,5 +1,8 @@
+package game.audio;
+
 import javax.sound.sampled.*;
-import java.io.File;
+import java.io.BufferedInputStream;
+import java.io.InputStream;
 
 public class AudioAdapter {
     private final AudioInputStream audioInputStream;
@@ -8,15 +11,23 @@ public class AudioAdapter {
     private final int size;
     private final byte[] data;
 
-    AudioAdapter(String filePath) throws AudioAdapterException {
+    public AudioAdapter(String filePath) throws AudioAdapterException {
         try {
-            audioInputStream = AudioSystem.getAudioInputStream(new File(filePath).getAbsoluteFile());
+            InputStream stream = ClassLoader
+                    .getSystemClassLoader()
+                    .getResourceAsStream(filePath);
+            if(stream != null)
+                audioInputStream = AudioSystem.getAudioInputStream(new BufferedInputStream(stream));
+            else
+                throw new AudioAdapterException();
+
             format = audioInputStream.getFormat();
             size = (int) (format.getFrameSize() * audioInputStream.getFrameLength());
             data = new byte[size];
             info = new DataLine.Info(Clip.class, format, size);
             audioInputStream.read(data, 0, size);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new AudioAdapterException();
         }
     }

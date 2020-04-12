@@ -1,3 +1,5 @@
+package game;
+
 import javax.swing.*;
 
 public class GameFrame extends JFrame {
@@ -13,7 +15,7 @@ public class GameFrame extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
 
-    public static void main(String[] args) {
+    public static void main(String... args) {
         SwingUtilities.invokeLater(GameFrame::new);
     }
 }

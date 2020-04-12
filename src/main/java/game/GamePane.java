@@ -1,3 +1,12 @@
+package game;
+
+import game.actor.Asteroid;
+import game.actor.Bullet;
+import game.actor.OutOfScreenException;
+import game.actor.Spaceship;
+import game.audio.AudioAdapter;
+import game.audio.AudioAdapterException;
+
 import javax.sound.sampled.Clip;
 import javax.swing.*;
 import java.awt.*;
@@ -5,6 +14,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,10 +55,6 @@ public class GamePane extends JPanel implements MouseMotionListener {
         setFocusTraversalKeysEnabled(false);
         initTimers();
         initBestTime();
-
-        // @TODO use class loader and add Maven
-        // InputStream stream = ClassLoader.getSystemClassLoader().getResourceAsStream("roboto-bold.ttf")
-        // Font font = Font.createFont(Font.TRUETYPE_FONT, stream).deriveFont(48f)
         initFont();
         initSound();
         playThemeSound();
@@ -172,7 +178,7 @@ public class GamePane extends JPanel implements MouseMotionListener {
             pr.write("" + readableTime);
         } catch (IOException ioException) {
             errorMessage = "Couldn't save the time in the best_time file.";
-            System.out.println(errorMessage);
+            System.err.println(errorMessage);
         }
     }
 
@@ -216,7 +222,7 @@ public class GamePane extends JPanel implements MouseMotionListener {
             System.out.println("Not found best_time file.");
             createBestTimeFile();
         } catch (InvalidDateFormatException invalidDateFormatException) {
-            System.out.println("Couldn't parse the date from best_time file.");
+            System.err.println("Couldn't parse the date from best_time file.");
             createBestTimeFile();
         }
     }
@@ -226,7 +232,7 @@ public class GamePane extends JPanel implements MouseMotionListener {
             pr.write("00:00");
             System.out.println("Created best_time file.");
         } catch (IOException ioCreationException) {
-            System.out.println("Couldn't create best_time file.");
+            System.err.println("Couldn't create best_time file.");
         }
     }
 
@@ -238,7 +244,14 @@ public class GamePane extends JPanel implements MouseMotionListener {
              * by mrmanet
              * https://www.1001freefonts.com/vcr-osd-mono.font
              */
-            basicFont = Font.createFont(Font.TRUETYPE_FONT, new File("VCR_OSD_MONO.ttf"));
+            InputStream stream = ClassLoader
+                    .getSystemClassLoader()
+                    .getResourceAsStream("fonts/VCR_OSD_MONO.ttf");
+            if(stream != null)
+                basicFont = Font.createFont(Font.TRUETYPE_FONT, stream);
+            else
+                throw new IOException();
+
         } catch (IOException | FontFormatException ignored) {
             errorMessage = "Couldn't load custom font.";
             System.out.println(errorMessage + " Using Verdana instead.");
@@ -299,7 +312,7 @@ public class GamePane extends JPanel implements MouseMotionListener {
              * license: CC BY 3.0 https://creativecommons.org/licenses/by/3.0/
              * link: https://soundcloud.com/ronaldkah/space-theme
              */
-            themeSound = new AudioAdapter("theme.wav");
+            themeSound = new AudioAdapter("music/theme.wav");
 
             /*
              * title: "Depth Charge"
@@ -307,7 +320,7 @@ public class GamePane extends JPanel implements MouseMotionListener {
              * license: Personal Use Only
              * link: http://soundbible.com/1472-Depth-Charge.html
              */
-            crashSound[0] = new AudioAdapter("charge.wav");
+            crashSound[0] = new AudioAdapter("sfx/charge.wav");
 
             /*
              * title: "Depth Charge Short"
@@ -315,7 +328,7 @@ public class GamePane extends JPanel implements MouseMotionListener {
              * license: Personal Use Only
              * link: http://soundbible.com/1469-Depth-Charge-Short.html
              */
-            crashSound[1] = new AudioAdapter("charge_short.wav");
+            crashSound[1] = new AudioAdapter("sfx/charge_short.wav");
 
             /*
              * title: "Depth Charge Shorter"
@@ -323,7 +336,7 @@ public class GamePane extends JPanel implements MouseMotionListener {
              * license: Personal Use Only
              * link: http://soundbible.com/1468-Depth-Charge-Shorter.html
              */
-            crashSound[2] = new AudioAdapter("charge_shorter.wav");
+            crashSound[2] = new AudioAdapter("sfx/charge_shorter.wav");
 
             /*
              * title: "Grenade"
@@ -331,7 +344,7 @@ public class GamePane extends JPanel implements MouseMotionListener {
              * license: CC BY 3.0 https://creativecommons.org/licenses/by/3.0/
              * link: http://soundbible.com/1151-Grenade.html
              */
-            crashSound[3] = new AudioAdapter("grenade.wav");
+            crashSound[3] = new AudioAdapter("sfx/grenade.wav");
 
             /*
              * title: "Big Bomb"
@@ -339,7 +352,7 @@ public class GamePane extends JPanel implements MouseMotionListener {
              * license: Sampling Plus 1.0 https://creativecommons.org/licenses/sampling+/1.0/
              * link: http://soundbible.com/1461-Big-Bomb.html
              */
-            crashSound[4] = new AudioAdapter("big_bomb.wav");
+            crashSound[4] = new AudioAdapter("sfx/big_bomb.wav");
 
             /*
              * title: "Blast"
@@ -347,7 +360,7 @@ public class GamePane extends JPanel implements MouseMotionListener {
              * license: CC BY 3.0 https://creativecommons.org/licenses/by/3.0/
              * link: http://soundbible.com/538-Blast.html
              */
-            crashSound[5] = new AudioAdapter("blast.wav");
+            crashSound[5] = new AudioAdapter("sfx/blast.wav");
 
             /*
              * title: "Explosion"
@@ -355,10 +368,11 @@ public class GamePane extends JPanel implements MouseMotionListener {
              * license: Personal Use Only
              * link: http://soundbible.com/483-Explosion.html
              */
-            spaceshipCrash = new AudioAdapter("spaceship_explosion.wav");
+            spaceshipCrash = new AudioAdapter("sfx/spaceship_explosion.wav");
         } catch (AudioAdapterException audioAdapterException) {
             errorMessage = "Couldn't load sound effects.";
-            System.out.println(errorMessage);
+            System.err.println(errorMessage);
+            audioAdapterException.printStackTrace();
         }
     }
 
@@ -366,24 +380,24 @@ public class GamePane extends JPanel implements MouseMotionListener {
         Random randomSound = new Random();
         try {
             crashSound[randomSound.nextInt(6)].play(0);
-        } catch (AudioAdapterException audioAdapterException) {
-            System.out.println("Couldn't play sound effect.");
+        } catch (Exception e) {
+            System.err.println("Couldn't play sound effect.");
         }
     }
 
     private void playThemeSound() {
         try {
             themeSound.play(Clip.LOOP_CONTINUOUSLY);
-        } catch (AudioAdapterException audioAdapterException) {
-            System.out.println("Couldn't play theme music.");
+        } catch (Exception e) {
+            System.err.println("Couldn't play theme music.");
         }
     }
 
     private void playSpaceshipCrash() {
         try {
             spaceshipCrash.play(0);
-        } catch (AudioAdapterException audioAdapterException) {
-            System.out.println("Couldn't play sound effect.");
+        } catch (Exception e) {
+            System.err.println("Couldn't play sound effect.");
         }
     }
 }

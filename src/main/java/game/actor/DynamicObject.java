@@ -1,3 +1,5 @@
+package game.actor;
+
 import java.awt.*;
 
 public abstract class DynamicObject {
