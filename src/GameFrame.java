@@ -10,6 +10,7 @@ public class GameFrame extends JFrame {
         setVisible(true);
         // center window
         setLocationRelativeTo(null);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
 
     public static void main(String[] args) {

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -17,24 +18,26 @@ import java.util.stream.Collectors;
 public class GamePane extends JPanel implements MouseMotionListener {
     private final Spaceship spaceship = new Spaceship(80);
     private List<Asteroid> asteroids = new ArrayList<>();
-    private Timer asteroidGenerationTimer;
-    private int asteroidGenerationDelay = 1000;
-    private Timer asteroidMoveTimer;
-    private int asteroidMoveDelay = 8;
     private List<Bullet> bullets = new ArrayList<>();
-    private Timer bulletMoveTimer;
-    private final int bulletMoveDelay = 1;
-    private int shootingDelay = 1000;
-    private Timer shootingTimer;
-    private Font yourTimeFont, bestTimeFont, titleFont, errorFont;
+    private final int DEFAULT_ASTEROID_GENERATION_DELAY = 1000,
+            DEFAULT_ASTEROID_MOVE_DELAY = 8,
+            DEFAULT_BULLET_GENERATION_DELAY = 1000,
+            DEFAULT_BULLET_MOVE_DELAY = 1;
+    private Timer asteroidGenerationTimer,
+            asteroidMoveTimer,
+            bulletMoveTimer,
+            shootingTimer,
+            elapsedTimer;
+    private Font yourTimeFont,
+            bestTimeFont,
+            titleFont,
+            errorFont;
     private String errorMessage = "";
     private final long gameStartMillis = System.currentTimeMillis();
-    private Timer elapsedTimer;
     private long bestTime = 0, yourTime = 0;
-    private int score;
     private final AudioAdapter[] crashSound = new AudioAdapter[6];
     private AudioAdapter themeSound;
-    private Timer themeTimer;
+    private AudioAdapter spaceshipCrash;
 
     GamePane() {
         addMouseMotionListener(this);
@@ -68,9 +71,13 @@ public class GamePane extends JPanel implements MouseMotionListener {
     }
 
     private void moveAsteroids() {
-        asteroids = asteroids.stream().filter(asteroid -> {
+        asteroids = asteroids
+                .stream()
+                .filter(asteroid -> !asteroid.canDisappear())
+                .filter(asteroid -> {
             if(!spaceship.getIsDestroyed() && spaceship.overlaps(asteroid)) {
                 spaceship.destroy();
+                playSpaceshipCrash();
                 if(yourTime > bestTime)
                     saveTime(getReadableTime(yourTime), "best_time");
                 return false;
@@ -89,18 +96,19 @@ public class GamePane extends JPanel implements MouseMotionListener {
         bullets = bullets.stream().filter(bullet -> {
             try {
                 bullet.move();
-                int asteroidsSize = asteroids.size();
+                AtomicBoolean anyAsteroidDestroyed = new AtomicBoolean(false);
                 asteroids = asteroids
                         .stream()
-                        .filter(asteroid -> !asteroid.overlaps(bullet))
+                        .filter(asteroid -> !asteroid.canDisappear())
+                        .peek(asteroid -> {
+                            if(asteroid.overlaps(bullet)) {
+                                anyAsteroidDestroyed.set(true);
+                                asteroid.destroy();
+                                playMeteorCrashSound();
+                            }
+                        })
                         .collect(Collectors.toList());
-                if(asteroidsSize == asteroids.size()) {
-                    return true;
-                } else {
-                    score++;
-                    playMeteorCrashSound();
-                    return false;
-                }
+                return !anyAsteroidDestroyed.get();
             } catch (OutOfScreenException e) {
                 return false;
             }
@@ -116,14 +124,14 @@ public class GamePane extends JPanel implements MouseMotionListener {
         });
         asteroidGenerationTimer.start();
 
-        asteroidMoveTimer = new Timer(asteroidMoveDelay, event -> {
+        asteroidMoveTimer = new Timer(DEFAULT_ASTEROID_MOVE_DELAY, event -> {
             asteroidMoveTimer.start();
             moveAsteroids();
             repaint();
         });
         asteroidMoveTimer.start();
 
-        bulletMoveTimer = new Timer(bulletMoveDelay, event -> {
+        bulletMoveTimer = new Timer(DEFAULT_BULLET_MOVE_DELAY, event -> {
             bulletMoveTimer.start();
             moveBullets();
             repaint();
@@ -173,7 +181,7 @@ public class GamePane extends JPanel implements MouseMotionListener {
         g.fillRect(0, 0, WindowSize.WIDTH.getSize(), WindowSize.HEIGHT.getSize());
         g.setColor(Color.WHITE);
         g.setFont(titleFont);
-        g.drawString("GAME OVER", WindowSize.WIDTH.getSize() / 2 - 150, WindowSize.HEIGHT.getSize() / 2);
+        g.drawString("GAME OVER", WindowSize.WIDTH.getSize() / 2 - 130, WindowSize.HEIGHT.getSize() / 2);
     }
 
 
@@ -272,14 +280,15 @@ public class GamePane extends JPanel implements MouseMotionListener {
     }
 
     private int countShootingDelay() {
-        System.out.println("shooting delay: " + (score >= 40 ? (score >= 60 ? (score >= 100 ? 400 : 550) : 700): shootingDelay));
-        System.out.println("score: " + score);
-        return (score >= 40 ? (score >= 60 ? (score >= 100 ? 400 : 550) : 700): shootingDelay);
+        int seconds = (int) getYourTime() / 1000;
+        System.out.println("shooting delay: " + (seconds >= 40 ? (seconds >= 60 ? (seconds >= 100 ? 400 : 550) : 700): DEFAULT_BULLET_GENERATION_DELAY));
+        return (seconds >= 40 ? (seconds >= 60 ? (seconds >= 100 ? 400 : 550) : 700): DEFAULT_BULLET_GENERATION_DELAY);
     }
 
     private int countMeteorGenerationDelay() {
-        System.out.println("meteor delay: " + Math.max(score >= 10 ? asteroidGenerationDelay / (score / 10) : asteroidGenerationDelay, 50));
-        return Math.max(score >= 10 ? asteroidGenerationDelay / (score / 10) : asteroidGenerationDelay, 50);
+        int seconds = (int) getYourTime() / 1000;
+        System.out.println("meteor delay: " + Math.max(DEFAULT_ASTEROID_GENERATION_DELAY - seconds * 10, 10));
+        return Math.max(DEFAULT_ASTEROID_GENERATION_DELAY - seconds * 10, 50);
     }
 
     private void initSound() {
@@ -339,6 +348,14 @@ public class GamePane extends JPanel implements MouseMotionListener {
              * link: http://soundbible.com/538-Blast.html
              */
             crashSound[5] = new AudioAdapter("blast.wav");
+
+            /*
+             * title: "Explosion"
+             * author: unknown
+             * license: Personal Use Only
+             * link: http://soundbible.com/483-Explosion.html
+             */
+            spaceshipCrash = new AudioAdapter("spaceship_explosion.wav");
         } catch (AudioAdapterException audioAdapterException) {
             errorMessage = "Couldn't load sound effects.";
             System.out.println(errorMessage);
@@ -355,12 +372,18 @@ public class GamePane extends JPanel implements MouseMotionListener {
     }
 
     private void playThemeSound() {
-        if(themeSound != null) {
-            try {
-                themeSound.play(Clip.LOOP_CONTINUOUSLY);
-            } catch (AudioAdapterException audioAdapterException) {
-                System.out.println("Couldn't play theme music.");
-            }
+        try {
+            themeSound.play(Clip.LOOP_CONTINUOUSLY);
+        } catch (AudioAdapterException audioAdapterException) {
+            System.out.println("Couldn't play theme music.");
+        }
+    }
+
+    private void playSpaceshipCrash() {
+        try {
+            spaceshipCrash.play(0);
+        } catch (AudioAdapterException audioAdapterException) {
+            System.out.println("Couldn't play sound effect.");
         }
     }
 }

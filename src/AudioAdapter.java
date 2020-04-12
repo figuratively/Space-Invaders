@@ -2,11 +2,11 @@ import javax.sound.sampled.*;
 import java.io.File;
 
 public class AudioAdapter {
-    private AudioInputStream audioInputStream;
-    private DataLine.Info info;
-    private AudioFormat format;
-    private int size;
-    private byte[] data;
+    private final AudioInputStream audioInputStream;
+    private final DataLine.Info info;
+    private final AudioFormat format;
+    private final int size;
+    private final byte[] data;
 
     AudioAdapter(String filePath) throws AudioAdapterException {
         try {
