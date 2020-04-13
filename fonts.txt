@@ -1,0 +1,5 @@
+/*
+ * "VCR OSD Mono"
+ * by mrmanet
+ * https://www.1001freefonts.com/vcr-osd-mono.font
+ */

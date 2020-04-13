@@ -1,10 +1,10 @@
-package game;
+package game.ui;
 
 public enum WindowSize {
     WIDTH(1024),
     HEIGHT(768);
 
-    private int size;
+    private final int size;
 
     public int getSize() {
         return size;

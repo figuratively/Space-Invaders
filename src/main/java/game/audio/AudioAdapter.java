@@ -1,42 +1,30 @@
 package game.audio;
 
-import javax.sound.sampled.*;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.Line;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 
 public class AudioAdapter {
-    private final AudioInputStream audioInputStream;
-    private final DataLine.Info info;
-    private final AudioFormat format;
-    private final int size;
-    private final byte[] data;
+    private String filePath;
 
-    public AudioAdapter(String filePath) throws AudioAdapterException {
-        try {
-            InputStream stream = ClassLoader
-                    .getSystemClassLoader()
-                    .getResourceAsStream(filePath);
-            if(stream != null)
-                audioInputStream = AudioSystem.getAudioInputStream(new BufferedInputStream(stream));
-            else
-                throw new AudioAdapterException();
-
-            format = audioInputStream.getFormat();
-            size = (int) (format.getFrameSize() * audioInputStream.getFrameLength());
-            data = new byte[size];
-            info = new DataLine.Info(Clip.class, format, size);
-            audioInputStream.read(data, 0, size);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new AudioAdapterException();
-        }
+    public AudioAdapter(String filePath) {
+        this.filePath = filePath;
     }
 
     public void play(int repeat) throws AudioAdapterException {
         try {
-            Clip clip = (Clip) AudioSystem.getLine(info);
-            clip.open(format, data, 0, size);
-            clip.loop(repeat);
+            InputStream stream = ClassLoader
+                    .getSystemClassLoader()
+                    .getResourceAsStream(filePath);
+            if(stream != null) {
+                Clip sound = (Clip) AudioSystem.getLine(new Line.Info(Clip.class));
+                sound.open(AudioSystem.getAudioInputStream(new BufferedInputStream(stream)));
+                sound.loop(repeat);
+            } else {
+                throw new AudioAdapterException();
+            }
         } catch (Exception e) {
             throw new AudioAdapterException();
         }

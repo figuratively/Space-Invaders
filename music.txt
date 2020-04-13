@@ -1,0 +1,48 @@
+/*
+ * title: "Space Theme"
+ * author: Ronald Kah https://ronaldkah.de/
+ * license: CC BY 3.0 https://creativecommons.org/licenses/by/3.0/
+ * link: https://soundcloud.com/ronaldkah/space-theme
+ */
+/*
+ * title: "Depth Charge"
+ * author: Mike Koenig
+ * license: Personal Use Only
+ * link: http://soundbible.com/1472-Depth-Charge.html
+ */
+/*
+ * title: "Depth Charge Short"
+ * author: Mike Koenig
+ * license: Personal Use Only
+ * link: http://soundbible.com/1469-Depth-Charge-Short.html
+ */
+/*
+ * title: "Depth Charge Shorter"
+ * author: Mike Koenig
+ * license: Personal Use Only
+ * link: http://soundbible.com/1468-Depth-Charge-Shorter.html
+ */
+/*
+ * title: "Grenade"
+ * author: Mike Koenig
+ * license: CC BY 3.0 https://creativecommons.org/licenses/by/3.0/
+ * link: http://soundbible.com/1151-Grenade.html
+ */
+/*
+ * title: "Big Bomb"
+ * author: Sandyrb
+ * license: Sampling Plus 1.0 https://creativecommons.org/licenses/sampling+/1.0/
+ * link: http://soundbible.com/1461-Big-Bomb.html
+ */
+/*
+ * title: "Blast"
+ * author: Mike Koenig
+ * license: CC BY 3.0 https://creativecommons.org/licenses/by/3.0/
+ * link: http://soundbible.com/538-Blast.html
+ */
+/*
+ * title: "Explosion"
+ * author: unknown
+ * license: Personal Use Only
+ * link: http://soundbible.com/483-Explosion.html
+ */
